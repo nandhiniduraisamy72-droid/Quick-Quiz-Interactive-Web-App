@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Professional Quiz App</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Roboto', sans-serif;
+  display: flex; justify-content: center; align-items: center;
+  height: 100vh; overflow: hidden;
+  background:
+    linear-gradient(rgba(0,0,0,.6),rgba(12, 132, 148, 0.6)),
+    url("https://t3.ftcdn.net/jpg/12/43/86/20/240_F_1243862057_kjwW6BTSwytY0jqnlP4jDRPd8AkUhtu7.jpg");
+  background-size:cover;
+  background-position:center;
+}
+
+
+body::before, body::after {
+  content:""; position: absolute; width: 300px; height: 300px;
+  border-radius: 50%; filter: blur(120px); z-index: 0; opacity: 0.7;
+}
+body::before { top: -100px; left: -100px; background: #e48a73; }
+body::after { bottom: -100px; right: -100px; background: #256e57; }
+
+.quiz-container {
+  background: rgba(10, 196, 109, 0.904);
+  backdrop-filter: blur(15px); border-radius: 20px;
+  padding: 20px 18px; width: 350px; text-align: center;
+  box-shadow: 0 15px 25px rgba(0,0,0,0.2);
+  position: relative; z-index: 10; transform: scale(0);
+  animation: popIn 1s forwards;
+}
+
+.quiz-container {
+  transition: all 0.4s ease;
+}
+
+.quiz-container:hover {
+  transform: scale(1.03) translateY(-8px);
+  box-shadow:
+    0 0 20px rgba(9, 72, 92, 0.514),
+    0 0 40px rgba(255,235,59,0.6),
+    0 25px 40px rgba(7, 219, 120, 0.4);
+}
+
+
+@keyframes popIn {
+  0% { transform: scale(0) rotateX(-90deg); opacity:0; }
+  60% { transform: scale(1.05) rotateX(10deg); opacity:1; }
+  100% { transform: scale(1) rotateX(0deg); }
+}
+
+h1 { margin-bottom: 20px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+
+.question { font-size: 18px; margin-bottom: 20px; color: #f0f0f0; min-height: 50px; transition: all 0.3s ease; }
+
+.options button {
+  display: block; width: 100%; margin: 8px 0; padding: 12px;
+  font-size: 16px; border: none; border-radius: 8px; cursor: pointer;
+  background: linear-gradient(90deg,#ff7e5f,#feb47b);
+  color: #fff; transition: all 0.3s;
+}
+
+.options button:hover {
+  background: linear-gradient(90deg,#43cea2,#185a9d);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 0 15px #fff, 0 0 30px #5949b4;
+}
+
+.score { font-size: 22px; margin-top: 25px; color: #fff; animation: fadeIn 1s ease-in; }
+@keyframes fadeIn { 0% {opacity:0;} 100% {opacity:1;} }
+
+.highlight { animation: highlightAnim 0.5s ease; }
+@keyframes highlightAnim { 0% {background-color: rgba(76, 175, 80,0.5);} 100% {background-color: rgba(199, 196, 24, 0.3);} }
+
+.fun-win {
+  font-size: 20px; color: #ffeb3b; margin-top: 15px;
+  animation: sparkle 1s infinite alternate;
+}
+@keyframes sparkle { 0% {text-shadow: 0 0 5px #fff;} 100% {text-shadow: 0 0 20px #ff0, 0 0 30px #ff0;} }
+
+#questionImage {
+  display: none; margin: 10px auto; border-radius: 15px;
+  max-width: 100%; height: auto;
+  box-shadow: 0 8px 20px rgba(13, 190, 202, 0.726); transition: all 0.5s ease;
+}
+
+.progress {
+  width: 100%; background: rgba(227, 243, 6, 0.3);
+  height: 8px; border-radius: 5px; margin-bottom: 20px;
+}
+#progressBar {
+  width: 0%; height: 100%; background: #ffeb3b;
+  border-radius: 5px; transition: width 0.3s ease;
+}
+
+.fact { font-size: 14px; color: #fff; margin-top: 8px; min-height: 20px; }
+</style>
+</head>
+<body>
+
+<div class="quiz-container">
+  <h1>Quick Quiz</h1>
+  <div class="progress"><div id="progressBar"></div></div>
+  <div id="quiz">
+    <div class="question" id="question"></div>
+    <img id="questionImage">
+    <div class="options" id="options"></div>
+    <div class="fact" id="fact"></div>
+  </div>
+  <div class="score" id="score"></div>
+  <div class="fun-win" id="funWin"></div>
+</div>
+
+<!-- confetti library -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+const quizData = [
+  { question: "Capital of France?", options:["Paris","Rome","Berlin","London"], answer:"Paris", image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDSvB0sUurwjC20SvFryPkk2-BtFc-Kopb9w&s" },
+  { question: "Language that runs in browser?", options:["Java","C++","JavaScript","Python"], answer:"JavaScript", image:"image copy.png" },
+  { question: "City called 'City of Canals'?", options:["Venice","Amsterdam","Bangkok","Bruges"], answer:"Venice", image:"https://ca-times.brightspotcdn.com/dims4/default/c84fc13/2147483647/strip/true/crop/4624x3082+2311+0/resize/2000x1333!/quality/75/?url=https%3A%2F%2Fcalifornia-times-brightspot.s3.amazonaws.com%2F6d%2F92%2F60c78c0040b28ac324bd8c9592ef%2Fadobestock-320585126-mainimage.jpeg" },
+  { question: "Mount Kilimanjaro is in?", options:["Kenya","Tanzania","Nepal","India"], answer:"Tanzania", image:"https://media.istockphoto.com/id/1731537687/photo/tanzania-flag-fluttering-in-the-wind-on-sky.jpg?s=612x612&w=0&k=20&c=mn7l0uhxmm170IaCuHsllkQf6Jhhds7WTzzRqhyOcnM=" },
+  { question: "Red Planet is?", options:["Mars","Venus","Jupiter","Saturn"], answer:"Mars", image:"https://img.freepik.com/free-vector/glowing-red-planet-black-background_1017-17953.jpg?semt=ais_hybrid&w=740&q=80" },
+  { question: "NoSQL database?", options:["MySQL","PostgreSQL","MongoDB","SQLite"], answer:"MongoDB", image:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRivXCkaET9d6hHwTXDxxR8Lw5Vql5cUqrkAg&s" }
+];
+
+const facts = [
+  "🌟 This city lights up the world with romance and the Eiffel Tower.",
+  "⚡ This language is everywhere in your browser, made in just 10 days!",
+  "🛶 Known as the 'City of Canals', gondolas float here.",
+  "🏔️ Africa's highest peak, snow-capped and majestic.",
+  "🔴 Called the Red Planet, home to rovers and sci-fi dreams.",
+  "📄 Not SQL, it stores your data like JSON documents."
+];
+
+
+let current = 0;
+let score = 0;
+
+// sounds
+let correctSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+let wrongSound = new Audio("https://www.soundjay.com/buttons/sounds/button-10.mp3");
+
+function loadQuiz() {
+  if(current >= quizData.length){
+    document.getElementById('quiz').style.display = 'none';
+    const scoreDiv = document.getElementById('score');
+    const funWinDiv = document.getElementById('funWin');
+    scoreDiv.innerText = `🎉 You scored ${score} / ${quizData.length}`;
+    if(score === quizData.length){
+      funWinDiv.innerText = "⚡🎉 Bravo! You’re a Brain Boss! 🧩👑 All correct!";
+      confetti({ particleCount:150, spread:70, origin:{y:0.6} });
+    } else { funWinDiv.innerText = ""; }
+    return;
+  }
+
+  const q = quizData[current];
+  const questionDiv = document.getElementById('question');
+  questionDiv.innerText = q.question;
+  questionDiv.classList.add('highlight');
+  setTimeout(() => questionDiv.classList.remove('highlight'), 300);
+
+  // progress bar
+  document.getElementById('progressBar').style.width = ((current+1)/quizData.length*100) + "%";
+
+  // image
+  const img = document.getElementById('questionImage');
+  if(q.image){ img.src = q.image; img.style.display="block"; } 
+  else { img.style.display="none"; }
+
+  // options
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = "";
+  q.options.forEach((opt,index)=>{
+    const btn = document.createElement('button');
+    btn.innerText = opt;
+    btn.onclick = () => selectAnswer(opt, btn);
+    optionsDiv.appendChild(btn);
+  });
+
+  // fact
+  document.getElementById('fact').innerText = facts[current] || "";
+}
+
+function selectAnswer(selected, btn){
+  if(selected === quizData[current].answer){
+    score++;
+    btn.style.backgroundColor="#4caf50"; btn.style.color="#fff";
+    correctSound.play();
+  } else {
+    btn.style.backgroundColor="#f44336"; btn.style.color="#fff";
+    wrongSound.play();
+  }
+  setTimeout(()=>{ current++; loadQuiz(); },500);
+}
+
+loadQuiz();
+</script>
+</body>
+</html>
